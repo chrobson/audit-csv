@@ -5,11 +5,11 @@ import (
 	"encoding/csv"
 	"io"
 	"log"
-	"mime/multipart"
 	"strconv"
 	"strings"
 )
 
+//Audyt represents pokerstars audyt structure
 type Audyt struct {
 	DateTime          string  `json:"datetime"`
 	Action            string  `json:"action"`
@@ -26,7 +26,7 @@ type Audyt struct {
 	WMoney1           string  `json:"wmoney1"`
 }
 
-func processFile(csvFile multipart.File) (float32, float32) {
+func processFile(csvFile io.Reader) (float32, float32) {
 	reader := csv.NewReader(bufio.NewReader(csvFile))
 	var playerInfos []Audyt
 	//Skip first three rows
