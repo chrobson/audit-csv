@@ -17,10 +17,12 @@ func auditHandler(c echo.Context) error {
 
 	body, _ := ioutil.ReadAll(c.Request().Body)
 	r := bytes.NewReader(body)
-	monney, tmoney := processFile(r)
+	jsonData := processFileToJSON(r)
 
+	monney, tmoney := countRb(jsonData)
 	sHTML := `<p>File uploaded successfully!</p>
 	Money from chests = %f <br/>
-	TMoney from chests = %f <br/`
-	return c.HTML(http.StatusOK, fmt.Sprintf(sHTML, monney, tmoney))
+	TMoney from chests = %f <br/>
+	Json data = %s <br/>`
+	return c.HTML(http.StatusOK, fmt.Sprintf(sHTML, monney, tmoney, jsonData))
 }

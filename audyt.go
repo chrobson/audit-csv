@@ -3,8 +3,11 @@ package main
 import (
 	"bufio"
 	"encoding/csv"
+	"encoding/json"
+	"fmt"
 	"io"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -26,7 +29,8 @@ type Audyt struct {
 	WMoney1           string  `json:"wmoney1"`
 }
 
-func processFile(csvFile io.Reader) (float32, float32) {
+//Process audit file into JsonData
+func processFileToJSON(csvFile io.Reader) []byte {
 	reader := csv.NewReader(bufio.NewReader(csvFile))
 	var playerInfos []Audyt
 	//Skip first three rows
@@ -60,13 +64,25 @@ func processFile(csvFile io.Reader) (float32, float32) {
 			WMoney1:           line[12],
 		})
 	}
-	var ammount, tmoney float32
+	jsondata, err := json.Marshal(playerInfos)
+
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	return jsondata
+}
+
+//countRB sums money and tournament money from audit
+func countRb(jsonData []byte) (ammount, tmoney float32) {
+	var playerInfos []Audyt
+	json.Unmarshal(jsonData, &playerInfos)
 	for _, playerInfo := range playerInfos {
 		if strings.Contains(playerInfo.Action, "Stars") {
 			ammount = ammount + playerInfo.Amount
 			tmoney = tmoney + playerInfo.TMoney
 		}
-
 	}
 	return ammount, tmoney
 }
