@@ -9,6 +9,7 @@ func NewServer(cfg *Config) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 
-	e.POST("/upload", auditHandler)
+	e.POST("/audit", auditHandler)
+	e.GET("/audit/money", getAuditMoneyHandler)
 	return e
 }
