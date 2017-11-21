@@ -3,10 +3,10 @@ package main
 import (
 	"database/sql"
 	"net/http"
-	"testing"
+	"strings"
 
-	"github.com/chrobson/audit-csv/audyt"
 	"github.com/labstack/echo"
+	"github.com/labstack/gommon/log"
 )
 
 // AuditRequest ...
@@ -25,6 +25,7 @@ func NewAuditHandler(db sql.DB) *AuditHandler {
 
 func (h *AuditHandler) handle(c echo.Context) error {
 	//....
+	return nil
 }
 
 func auditHandler(c echo.Context) error {
@@ -33,28 +34,26 @@ func auditHandler(c echo.Context) error {
 		return err
 	}
 
-	// jsonData, err := processFileToJSON(bytes.NewReader(body))
-	// if err != nil {
-	// 	return c.JSON(http.StatusBadRequest, nil)
-	// }
-	// jsonData
-
-	audit, err := audyt.ParseAudit(req.Audit)
+	audits, err := ParseAudit(strings.NewReader(req.Audit))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, nil)
 	}
 
+	ammount, tmoney := countRb(audits)
+	log.Info(ammount, tmoney)
+
 	// store to database
+	saveAuditToDB(audits)
 	return nil
 }
 
-func TestX(t testing.T) {
-	// ......
-	h := NewAuditHandler(db)
-	if err := h.handle(c); err != nil {
-		t.Fatalf("/v1/players/financials failed: %s", err)
-	}
-}
+// func TestX(t testing.T) {
+// 	// ......
+// 	h := NewAuditHandler(db)
+// 	if err := h.handle(c); err != nil {
+// 		t.Fatalf("/v1/players/financials failed: %s", err)
+// 	}
+// }
 
 type GetAuditResponse struct {
 	Money  float64 `json:"money"`
@@ -63,13 +62,13 @@ type GetAuditResponse struct {
 
 func getAuditMoneyHandler(c echo.Context) error {
 	// GET /audit/money?date=15-11-2017T00:00:00Z
-	u, err := c.Param("date")
-	if err != nil {
-		return err
-	}
-	u.Get("date")
+	//u, err := c.Param("date")
+	// if err != nil {
+	// 	return err
+	// }
+	// u.Get("date")
 
-	money, tmoney := 1, 1 // get from database
+	money, tmoney := 1.0, 1.0 // get from database
 
 	var resp = GetAuditResponse{
 		Money:  money,
