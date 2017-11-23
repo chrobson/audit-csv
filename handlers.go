@@ -3,10 +3,11 @@ package main
 import (
 	"database/sql"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/labstack/echo"
-	"github.com/labstack/gommon/log"
+	_"github.com/labstack/gommon/log"
 )
 
 // AuditRequest ...
@@ -33,14 +34,13 @@ func auditHandler(c echo.Context) error {
 	if err := c.Bind(&req); err != nil {
 		return err
 	}
-
-	audits, err := ParseAudit(strings.NewReader(req.Audit))
+	re := regexp.MustCompile(`(\d)(,)(\d{3})`)
+	s := re.ReplaceAllString(req.Audit, "$1$3")
+	r := strings.NewReader(s)
+	audits, err := ParseAudit(r)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, nil)
 	}
-
-	ammount, tmoney := countRb(audits)
-	log.Info(ammount, tmoney)
 
 	// store to database
 	saveAuditToDB(audits)
@@ -61,14 +61,10 @@ type GetAuditResponse struct {
 }
 
 func getAuditMoneyHandler(c echo.Context) error {
-	// GET /audit/money?date=15-11-2017T00:00:00Z
-	//u, err := c.Param("date")
-	// if err != nil {
-	// 	return err
-	// }
-	// u.Get("date")
+	dateFrom := c.QueryParam("start")
+	dateTo := c.QueryParam("end")
 
-	money, tmoney := 1.0, 1.0 // get from database
+	money, tmoney := countRb(dateFrom, dateTo)
 
 	var resp = GetAuditResponse{
 		Money:  money,
